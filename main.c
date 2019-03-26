@@ -53,8 +53,7 @@ int main(void) {
 	/**/
 	/** Configuration for pin 1 on port c.
 	 * Output compare is on option 4 in the pin control register*/
-	//SIM->SCGC5 |= GPIO_CLOCK_GATING_PORTA | GPIO_CLOCK_GATING_PORTC;
-	//PORTC->PCR[1]   = PORT_PCR_MUX(0x4);
+
 	gpio_pin_control_register_t pin_control_register_bit_c_1 = GPIO_MUX4;
 	GPIO_clock_gating(GPIO_C);
 	GPIO_clock_gating(GPIO_A);

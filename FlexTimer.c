@@ -2,8 +2,8 @@
  * FlexTimer.c
  *
  *  Created on: 25/03/2019
- *      Author: Charles
- *     brief: implementation of funcions in FlexTimer.h
+ *      Author: Diego Charles and Ruben Charles
+ *     brief: implementation of functions in FlexTimer.h
  */
 #include "FlexTimer.h"
 
@@ -17,11 +17,20 @@ void FlexTimer_update_channel_value(int16_t channel_value)
 void FlexTimer_Init(flexTimer_channels_t channel)
 {
 
-	/**Clock gating for FlexTimer*/
+	/**Clock gating for FlexTimers*/
 	SIM->SCGC6 |= SIM_SCGC6_FTM0(1);
+	SIM->SCGC6 |= SIM_SCGC6_FTM1(1);
+	SIM->SCGC6 |= SIM_SCGC6_FTM2(1);
+	/**Selects the FTM behavior in BDM mode.In this case in functional mode pag 1076*/
+	FTM0->CONF |= FTM_CONF_BDMMODE(3);
+	FTM1->CONF |= FTM_CONF_BDMMODE(3);
+	FTM2->CONF |= FTM_CONF_BDMMODE(3);
+	/*select flexTimer channel mode and configuration*/
 	Fleximer_mode(CHANNEL_0,TOGGLE_OUTPUT_ON_MATCH ,TOGGLE_OUTPUT_ON_MATCH);
+	/*select flexTimer frequency with the new three function calls*/
 	FlexTimer_update_channel_value(0x03);
-	FlexTimer_clockSource_and_prescaler(CHANNEL_0);
+	FlexTimer_clockSource_and_prescaler(CHANNEL_0,FLEX_TIMER_CLKS_1,FLEX_TIMER_PS_128);
+	FlexTimer_mod(CHANNEL_0, 0X05);
 }
 void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTimer_mode_configurations_t config)
 {
@@ -31,10 +40,6 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 	case OUTPUT_COMPARE:
 		/**It enable the FTM*/
 		FTM0->MODE |= FTM_MODE_FTMEN_MASK;
-		/**Selects the FTM behavior in BDM mode.In this case in functional mode*/
-		FTM0->CONF |= FTM_CONF_BDMMODE(3);
-		/**Assign modulo register with a predefined value*/
-		FTM0->MOD = 0x05;
 		/*setting channel on output compare mode*/
 		FTM0->CONTROLS[0].CnSC = FTM_CnSC_MSA(1);
 
@@ -42,23 +47,18 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 		if( TOGGLE_OUTPUT_ON_MATCH== config)
 			/**Configure FlexTimer in output compare in toggle mode*/
 			FTM0->CONTROLS[0].CnSC =  FTM_CnSC_ELSA(1);
-
 		else if(CLEAR_OUTPUT_ON_MATCH== config)
 			/**Configure FlexTimer in output compare in clear output on match*/
 			FTM0->CONTROLS[0].CnSC = FTM_CnSC_ELSB(1);
-
 		else if(SET_OUTPUT_ON_MATCH== config)
 			/**Configure FlexTimer in output compare  in set output on match*/
 			FTM0->CONTROLS[0].CnSC =  FTM_CnSC_ELSB(1) | FTM_CnSC_ELSA(1);
-
-
 		break;
+
 	case TIMER_OVERFLOW:
 		FTM0->MODE |= FTM_MODE_FTMEN_MASK;
 		/**Selects the FTM behavior in BDM mode.In this case in functional mode*/
 		FTM0->CONF |= FTM_CONF_BDMMODE(3);
-		/**Assigning a default value for modulo register*/
-		FTM0->MOD = 0xF0;
 		/**Enabling the interrupt*/
 		FTM0->SC |=  FTM_SC_TOIE(1);
 		break;
@@ -68,8 +68,6 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 		FTM0->MODE |= FTM_MODE_WPDIS_MASK;
 		/**Enables the writing over all registers*/
 		FTM0->MODE &= ~ FTM_MODE_FTMEN_MASK;
-		/**Assigning a default value for modulo register*/
-		FTM0->MOD = 0x00FF;
 		/**Selects the Edge-Aligned PWM mode mode*/
 		FTM0->CONTROLS[0].CnSC = FTM_CnSC_MSB(1) | FTM_CnSC_ELSB(1);
 		/**Assign a duty cycle of 50%*/
@@ -81,18 +79,54 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 	}
 
 }
-void FlexTimer_clockSource_and_prescaler(flexTimer_channels_t channel)
+void FlexTimer_clockSource_and_prescaler(flexTimer_channels_t channel, uint8_t clockSource, uint8_t prescaler )
 {
+	/* for  SC register descrption view page 961 */
+	/* clock source selction CLKS
+	 * 00 No clock selected. This in effect disables the FTM counter.
+	  01 System clock
+	  10 Fixed frequency clock
+	  11 External clock*/
+	/* prescaler selection PS
+	 * 000 Divide by 1
+		001 Divide by 2
+		010 Divide by 4
+		011 Divide by 8
+		100 Divide by 16
+		101 Divide by 32
+		110 Divide by 64
+		111 Divide by 128*/
+
+
 	switch(channel)
 	{
 	case CHANNEL_0:
-		FTM0->SC |= FTM_SC_CLKS(FLEX_TIMER_CLKS_1)| FTM_SC_PS(FLEX_TIMER_PS_128);
+		FTM0->SC |= FTM_SC_CLKS(clockSource)| FTM_SC_PS(prescaler);
+	case CHANNEL_1:
+		FTM1->SC |= FTM_SC_CLKS(FLEX_TIMER_CLKS_1)| FTM_SC_PS(FLEX_TIMER_PS_128);
+	case CHANNEL_2:
+		FTM2->SC |= FTM_SC_CLKS(FLEX_TIMER_CLKS_1)| FTM_SC_PS(FLEX_TIMER_PS_128);
 		break;
 	default:
 		break;
 	}
 
 
+}
+void FlexTimer_mod(flexTimer_channels_t channel, uint16_t modulo)
+{
+	switch(channel)
+	{
+	case CHANNEL_0:
+		FTM0->MOD=modulo;
+	case CHANNEL_1:
+		FTM1->MOD=modulo;
+	case CHANNEL_2:
+		FTM2->MOD=modulo;
+		break;
+	default:
+		break;
+	}
 }
 
 

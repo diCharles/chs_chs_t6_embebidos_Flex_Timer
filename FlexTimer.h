@@ -2,7 +2,7 @@
  * FlexTimer.h
  *
  *  Created on: 25/03/2019
- *      Author: Charles
+ *      Author: Diego Charles Suárez
  *      \brief
 		This is the header file for the FlexTimer divice driver.
 		Add configuration structures.
@@ -58,14 +58,27 @@ typedef enum{CHANNEL_0,
 			CHANNEL_3
 			}flexTimer_channels_t;
 
-
+/* write directly Counter Value (CnV) register*/
 void FlexTimer_update_channel_value(int16_t channel_value);
 
 /*brief for flex timer initialization in a specific mode from flexTimer_mode_t*/
 /*channel argument still not implemented*/
 void FlexTimer_Init(flexTimer_channels_t channel);
+
+/*configures a flex timer channel  mode and configuration of the mode*/
 void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTimer_mode_configurations_t);
 
-void FlexTimer_clockSource_and_prescaler(flexTimer_channels_t channel);
+/*selects clock source to given Flextimer channel*/
+void FlexTimer_clockSource_and_prescaler(flexTimer_channels_t channel, uint8_t clockSource, uint8_t prescaler);
+
+/*selects flexTimer channel  count modulo modifying FTMx->MOD */
+void FlexTimer_mod(flexTimer_channels_t channel, uint16_t modulo);
+
+/* helps programmer to select frequency of flextimer channel*/
+/* The fixed frequency clock for each FTM is MCGFFCLK.*/
+void FlexTimer_frecuency(flexTimer_channels_t channel, uint32_t freq);
+
+/* sets PWM duty cycle for the desired channel*/
+void FlexTimer_PWM_duty_cycle(flexTimer_channels_t channel,uint8_t dutyCycle);
 
 #endif /* FLEXTIMER_H_ */
