@@ -14,6 +14,7 @@
 #include "FlexTimer.h"
 #include "NVIC.h"
 #include "Bits.h"
+#include "switches_k64.h"
 //#include "GlobalFunctions.h"
 
 /**
@@ -33,10 +34,33 @@ int main(void)
 
 	/**Initialization of FlexTimer in output compare mode*/
 	FlexTimer_Init(CHANNEL_0);
+	init_sw2(NO_PRIORITY_TH,NO_PRIORITY,NO_INT_EDGE_DEFINED);
+	/*    priority threshold=10,priority number 4, interrupt launched as button is pressed */
+	init_sw3(NO_PRIORITY_TH,NO_PRIORITY,NO_INT_EDGE_DEFINED);
 
-
+	//this varaibles are incremented by sw3 and sw3
+	uint16_t module=20;
+	uint16_t CnValue=16;
 	for(;;) {
+		sw2_pressed();//reads sw2 state
+		sw3_pressed();//read sw3 state
 
+		if(sw2_one_shot())
+		{
+			module--;
+			CnValue--;
+			FlexTimer_mod(CHANNEL_0, module);
+			FlexTimer_update_channel_value(CnValue);
+		}
+		sw3_pressed();//reads sw2 state
+
+		if(sw3_one_shot())
+		{
+			module=module-3;
+			CnValue=CnValue-3;
+			FlexTimer_mod(CHANNEL_0, module);
+			FlexTimer_update_channel_value(CnValue);
+		}
 
 	}
 
