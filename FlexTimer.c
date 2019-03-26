@@ -21,6 +21,7 @@ void FlexTimer_Init(flexTimer_channels_t channel)
 	SIM->SCGC6 |= SIM_SCGC6_FTM0(1);
 	Fleximer_mode(CHANNEL_0,TOGGLE_OUTPUT_ON_MATCH ,TOGGLE_OUTPUT_ON_MATCH);
 	FlexTimer_update_channel_value(0x03);
+	FlexTimer_clockSource_and_prescaler(CHANNEL_0);
 }
 void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTimer_mode_configurations_t config)
 {
@@ -34,18 +35,22 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 		FTM0->CONF |= FTM_CONF_BDMMODE(3);
 		/**Assign modulo register with a predefined value*/
 		FTM0->MOD = 0x05;
+		/*setting channel on output compare mode*/
+		FTM0->CONTROLS[0].CnSC = FTM_CnSC_MSA(1);
 
+		/* setting  output compare configuration*/
 		if( TOGGLE_OUTPUT_ON_MATCH== config)
 			/**Configure FlexTimer in output compare in toggle mode*/
-			FTM0->CONTROLS[0].CnSC = FTM_CnSC_MSA(1) | FTM_CnSC_ELSA(1);
+			FTM0->CONTROLS[0].CnSC =  FTM_CnSC_ELSA(1);
+
 		else if(CLEAR_OUTPUT_ON_MATCH== config)
 			/**Configure FlexTimer in output compare in clear output on match*/
-			FTM0->CONTROLS[0].CnSC = FTM_CnSC_MSA(1) | FTM_CnSC_ELSB(1);
+			FTM0->CONTROLS[0].CnSC = FTM_CnSC_ELSB(1);
+
 		else if(SET_OUTPUT_ON_MATCH== config)
 			/**Configure FlexTimer in output compare  in set output on match*/
-					FTM0->CONTROLS[0].CnSC = FTM_CnSC_MSA(1) | FTM_CnSC_ELSB(1) | FTM_CnSC_ELSA(1);
-		/**Select clock source and prescaler*/
-		FTM0->SC |= FTM_SC_CLKS (FLEX_TIMER_CLKS_1)| FTM_SC_PS(FLEX_TIMER_PS_128);
+			FTM0->CONTROLS[0].CnSC =  FTM_CnSC_ELSB(1) | FTM_CnSC_ELSA(1);
+
 
 		break;
 	case TIMER_OVERFLOW:
@@ -54,8 +59,8 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 		FTM0->CONF |= FTM_CONF_BDMMODE(3);
 		/**Assigning a default value for modulo register*/
 		FTM0->MOD = 0xF0;
-		/**Enabling the interrupt,selecting the clock source and a pre-scaler of 128*/
-		FTM0->SC |=  FTM_SC_TOIE(1) |FTM_SC_CLKS (FLEX_TIMER_CLKS_1)| FTM_SC_PS(FLEX_TIMER_PS_128);
+		/**Enabling the interrupt*/
+		FTM0->SC |=  FTM_SC_TOIE(1);
 		break;
 	case PWM		   :
 		/**When write protection is enabled (WPDIS = 0), write protected bits cannot be written.
@@ -69,11 +74,24 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 		FTM0->CONTROLS[0].CnSC = FTM_CnSC_MSB(1) | FTM_CnSC_ELSB(1);
 		/**Assign a duty cycle of 50%*/
 		FTM0->CONTROLS[0].CnV = FTM0->MOD/2;
-		/**Configure the times*/
-		FTM0->SC |= FTM_SC_CLKS(FLEX_TIMER_CLKS_1)| FTM_SC_PS(FLEX_TIMER_PS_128);
+
+
 		break;
 
 	}
+
+}
+void FlexTimer_clockSource_and_prescaler(flexTimer_channels_t channel)
+{
+	switch(channel)
+	{
+	case CHANNEL_0:
+		FTM0->SC |= FTM_SC_CLKS(FLEX_TIMER_CLKS_1)| FTM_SC_PS(FLEX_TIMER_PS_128);
+		break;
+	default:
+		break;
+	}
+
 
 }
 

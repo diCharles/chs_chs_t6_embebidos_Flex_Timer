@@ -66,5 +66,6 @@ void FlexTimer_update_channel_value(int16_t channel_value);
 void FlexTimer_Init(flexTimer_channels_t channel);
 void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTimer_mode_configurations_t);
 
+void FlexTimer_clockSource_and_prescaler(flexTimer_channels_t channel);
 
 #endif /* FLEXTIMER_H_ */
