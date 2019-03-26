@@ -24,11 +24,11 @@ void FlexTimer_Init(flexTimer_channels_t channel)
 	FTM0->CONF |= FTM_CONF_BDMMODE(3);
 
 	/*select flexTimer channel mode and configuration*/
-	Fleximer_mode(CHANNEL_0,OUTPUT_COMPARE ,SET_OUTPUT_ON_MATCH);
-	FlexTimer_mod(CHANNEL_0, 9);
+	Fleximer_mode(CHANNEL_0,OUTPUT_COMPARE ,CLEAR_OUTPUT_ON_MATCH);
+	FlexTimer_mod(CHANNEL_0, 16534);
 	/*select flexTimer frequency with the new three function calls*/
-	FlexTimer_update_channel_value(0x05);
-	FlexTimer_clockSource_and_prescaler(CHANNEL_0,FLEX_TIMER_CLKS_1,FLEX_TIMER_PS_1);
+	FlexTimer_update_channel_value(16533);
+	FlexTimer_clockSource_and_prescaler(CHANNEL_0,FLEX_TIMER_CLKS_1,FLEX_TIMER_PS_128);
 
 }
 void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTimer_mode_configurations_t config)
@@ -49,7 +49,7 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 		{
 			/**Configure FlexTimer in output compare in clear output on match*/
 			FTM0->CONTROLS[0].CnSC |=   FTM_CnSC_MSA(1) |FTM_CnSC_ELSB(1);
-			FTM0->CONTROLS[0].CnSC &=~FTM_CnSC_ELSA(1);
+			FTM0->CONTROLS[0].CnSC &=~(FTM_CnSC_ELSA(1));
 		}
 		else if(SET_OUTPUT_ON_MATCH== config)
 			/**Configure FlexTimer in output compare  in set output on match*/
