@@ -19,18 +19,17 @@ void FlexTimer_Init(flexTimer_channels_t channel)
 
 	/**Clock gating for FlexTimers*/
 	SIM->SCGC6 |= SIM_SCGC6_FTM0(1);
-	SIM->SCGC6 |= SIM_SCGC6_FTM1(1);
-	SIM->SCGC6 |= SIM_SCGC6_FTM2(1);
+
 	/**Selects the FTM behavior in BDM mode.In this case in functional mode pag 1076*/
 	FTM0->CONF |= FTM_CONF_BDMMODE(3);
-	FTM1->CONF |= FTM_CONF_BDMMODE(3);
-	FTM2->CONF |= FTM_CONF_BDMMODE(3);
+
 	/*select flexTimer channel mode and configuration*/
-	Fleximer_mode(CHANNEL_0,TOGGLE_OUTPUT_ON_MATCH ,TOGGLE_OUTPUT_ON_MATCH);
+	Fleximer_mode(CHANNEL_0,OUTPUT_COMPARE ,TOGGLE_OUTPUT_ON_MATCH);
+	FlexTimer_mod(CHANNEL_0, 9);
 	/*select flexTimer frequency with the new three function calls*/
-	FlexTimer_update_channel_value(0x03);
-	FlexTimer_clockSource_and_prescaler(CHANNEL_0,FLEX_TIMER_CLKS_1,FLEX_TIMER_PS_128);
-	FlexTimer_mod(CHANNEL_0, 20000);
+	FlexTimer_update_channel_value(0x05);
+	FlexTimer_clockSource_and_prescaler(CHANNEL_0,FLEX_TIMER_CLKS_1,FLEX_TIMER_PS_1);
+
 }
 void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTimer_mode_configurations_t config)
 {
@@ -40,19 +39,18 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 	case OUTPUT_COMPARE:
 		/**It enable the FTM*/
 		FTM0->MODE |= FTM_MODE_FTMEN_MASK;
-		/*setting channel on output compare mode*/
-		FTM0->CONTROLS[0].CnSC |= FTM_CnSC_MSA(1);
+
 
 		/* setting  output compare configuration*/
 		if( TOGGLE_OUTPUT_ON_MATCH== config)
 			/**Configure FlexTimer in output compare in toggle mode*/
-			FTM0->CONTROLS[0].CnSC |=  FTM_CnSC_ELSA(1);
+			FTM0->CONTROLS[0].CnSC |= FTM0->CONTROLS[0].CnSC |= FTM_CnSC_MSA(1)| FTM_CnSC_ELSA(1);
 		else if(CLEAR_OUTPUT_ON_MATCH== config)
 			/**Configure FlexTimer in output compare in clear output on match*/
-			FTM0->CONTROLS[0].CnSC |= FTM_CnSC_ELSB(1);
+			FTM0->CONTROLS[0].CnSC |=   FTM_CnSC_MSA(1) |FTM_CnSC_ELSB(1);
 		else if(SET_OUTPUT_ON_MATCH== config)
 			/**Configure FlexTimer in output compare  in set output on match*/
-			FTM0->CONTROLS[0].CnSC |=  FTM_CnSC_ELSB(1) | FTM_CnSC_ELSA(1);
+			FTM0->CONTROLS[0].CnSC |=   FTM_CnSC_MSA(1) |FTM_CnSC_ELSB(1) | FTM_CnSC_ELSA(1);
 		break;
 
 	case TIMER_OVERFLOW:
@@ -102,8 +100,10 @@ void FlexTimer_clockSource_and_prescaler(flexTimer_channels_t channel, uint8_t c
 	{
 	case CHANNEL_0:
 		FTM0->SC |= FTM_SC_CLKS(clockSource)| FTM_SC_PS(prescaler);
+		break;
 	case CHANNEL_1:
 		FTM1->SC |= FTM_SC_CLKS(FLEX_TIMER_CLKS_1)| FTM_SC_PS(FLEX_TIMER_PS_128);
+		break;
 	case CHANNEL_2:
 		FTM2->SC |= FTM_SC_CLKS(FLEX_TIMER_CLKS_1)| FTM_SC_PS(FLEX_TIMER_PS_128);
 		break;
@@ -119,8 +119,10 @@ void FlexTimer_mod(flexTimer_channels_t channel, uint16_t modulo)
 	{
 	case CHANNEL_0:
 		FTM0->MOD=modulo;
+		break;
 	case CHANNEL_1:
 		FTM1->MOD=modulo;
+		break;
 	case CHANNEL_2:
 		FTM2->MOD=modulo;
 		break;
