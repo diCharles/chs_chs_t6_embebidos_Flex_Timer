@@ -103,6 +103,20 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 		{
 
 		}
+		case INPUT_CAPTURE:
+			if( SINGLE_EDGE_CAPTURE == config)
+			{
+				//enable FTM0 clock
+				SIM->SCGC6|=0x03000000; //enable FTM0 and FTM0 module clock
+				SIM->SCGC5=SIM->SCGC5|0x3E00; //enable port A/B/C/D/E clock
+				FTM0->SC=0x00;
+				//FTM0->C0SC|=0x04; //Capture on Rising Edge Only
+				//FTM0->COMBINE=0x00; //clear
+				//enable capture interrupt
+				//FTM0->C0SC|=0x40; //enable CH0 interrupt
+				FTM0->SC|=0x08;
+				//in ISR of capture interrupt, read the FTM_c0V register to get the capture value
+			}
 
 
 		break;

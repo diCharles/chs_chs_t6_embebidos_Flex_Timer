@@ -43,7 +43,8 @@
 typedef enum{
 			OUTPUT_COMPARE,
 			TIMER_OVERFLOW,
-			PWM
+			PWM,
+			INPUT_CAPTURE
 			}flexTimer_modes_t;
 /* FLEX TIMER CONFIGURATION OF OPERATION MODES*/
 typedef enum{
@@ -53,7 +54,8 @@ typedef enum{
 			SIMPLE_PWM,
 			EGDE_ALIGENED_PWM,
 			CENTER_ALIGNED_PWM,
-			COMPLEMENTARY_PWM
+			COMPLEMENTARY_PWM,
+			SINGLE_EDGE_CAPTURE
 			}flexTimer_mode_configurations_t;
 /*FLEX TIMER CHANNELS*/
 typedef enum{CHANNEL_0,
