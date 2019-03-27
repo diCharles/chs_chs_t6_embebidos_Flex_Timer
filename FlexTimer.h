@@ -49,7 +49,10 @@ typedef enum{
 typedef enum{
 			TOGGLE_OUTPUT_ON_MATCH,
 			CLEAR_OUTPUT_ON_MATCH,
-			SET_OUTPUT_ON_MATCH
+			SET_OUTPUT_ON_MATCH,
+			SIMPLE_PWM,
+			EGDE_ALIGENED_PWM,
+			CENTER_ALIGNED_PWM
 			}flexTimer_mode_configurations_t;
 /*FLEX TIMER CHANNELS*/
 typedef enum{CHANNEL_0,

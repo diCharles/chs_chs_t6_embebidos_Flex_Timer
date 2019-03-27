@@ -64,15 +64,41 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 		FTM0->SC |=  FTM_SC_TOIE(1);
 		break;
 	case PWM		   :
-		/**When write protection is enabled (WPDIS = 0), write protected bits cannot be written.
-		 * When write protection is disabled (WPDIS = 1), write protected bits can be written.*/
-		FTM0->MODE |= FTM_MODE_WPDIS_MASK;
-		/**Enables the writing over all registers*/
-		FTM0->MODE &= ~ FTM_MODE_FTMEN_MASK;
-		/**Selects the Edge-Aligned PWM mode mode*/
-		FTM0->CONTROLS[0].CnSC = FTM_CnSC_MSB(1) | FTM_CnSC_ELSB(1);
-		/**Assign a duty cycle of 50%*/
-
+		if( SIMPLE_PWM== config)
+		{
+			/**When write protection is enabled (WPDIS = 0), write protected bits cannot be written.
+			 * When write protection is disabled (WPDIS = 1), write protected bits can be written.*/
+			FTM0->MODE |= FTM_MODE_WPDIS_MASK;
+			/**Enables the writing over all registers*/
+			FTM0->MODE &= ~ FTM_MODE_FTMEN_MASK;
+			/**Selects the Edge-Aligned PWM mode mode*/
+			FTM0->CONTROLS[0].CnSC = FTM_CnSC_MSB(1) | FTM_CnSC_ELSB(1);
+			/**Assign a duty cycle of 50%*/
+		}
+		else if( CENTER_ALIGNED_PWM == config)
+		{
+			SIM->SCGC6|=0x03000000; //enable FTM0 and FTM0 module clock
+			SIM->SCGC5=SIM->SCGC5|0x3E00; //enable port A/B/C/D/E clock
+			FTM0->CONF=0xC0; //set up BDM in 11
+			FTM0->FMS=0x00; //clear the WPEN so that WPDIS is set in FTM0_MODE reg
+			FTM0->MODE|=0x05; //enable write the FTM CnV register
+			FTM0->MOD=1000;
+			//FTM0_C0SC=0x28; ////center-alignment, PWM begins with High
+			//FTM0->C1SC=0x28; //PWM waveform is high-low-high
+			FTM0->COMBINE=0x02; //complementary mode for CH0&CH1 of FTM0
+			FTM0->COMBINE|=0x10; // dead timer insertion enabled in complementary mode for //CH0&CH1 of FTM0
+			FTM0->DEADTIME=0x1F; //dead time is 16 system clock cycles
+			//FTM0->C1V=500;
+			//FTM0->C0V=500;
+			FTM0->CNTIN=0x00;
+			//FTM0->C2SC=0x28;
+			//FTM0->C3SC=0x28;
+			FTM0->COMBINE|=0x0200;
+			FTM0->COMBINE|=0x1000;
+			//FTM0->C3V=250;
+			//FTM0->C2V=250;
+			FTM0->SC=0x68;
+		}
 
 
 		break;
