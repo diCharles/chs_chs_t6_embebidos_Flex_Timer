@@ -99,6 +99,10 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 			//FTM0->C2V=250;
 			FTM0->SC=0x68;
 		}
+		else if( COMPLEMENTARY_PWM == config)
+		{
+
+		}
 
 
 		break;
