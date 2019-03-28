@@ -83,20 +83,20 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 			FTM0->FMS=0x00; //clear the WPEN so that WPDIS is set in FTM0_MODE reg
 			FTM0->MODE|=0x05; //enable write the FTM CnV register
 			FTM0->MOD=1000;
-			//FTM0_C0SC=0x28; ////center-alignment, PWM begins with High
-			//FTM0->C1SC=0x28; //PWM waveform is high-low-high
+			FTM0->CONTROLS[0].CnSC=0x28;//         --------------------------------------->FTM0_C0SC=0x28; ////center-alignment, PWM begins with High
+			FTM0->CONTROLS[1].CnSC=0x28;//          --------------------------------------->FTM0->C1SC=0x28; //PWM waveform is high-low-high
 			FTM0->COMBINE=0x02; //complementary mode for CH0&CH1 of FTM0
 			FTM0->COMBINE|=0x10; // dead timer insertion enabled in complementary mode for //CH0&CH1 of FTM0
 			FTM0->DEADTIME=0x1F; //dead time is 16 system clock cycles
-			//FTM0->C1V=500;
-			//FTM0->C0V=500;
+			FTM0->CONTROLS[1].CnV=500;//               ------------------------------------>FTM0->C1V=500;
+			FTM0->CONTROLS[0].CnV=500;//           --------------------------------------->FTM0->C0V=500;
 			FTM0->CNTIN=0x00;
-			//FTM0->C2SC=0x28;
-			//FTM0->C3SC=0x28;
+			FTM0->CONTROLS[2].CnSC=0x28;//         --------------------------------------->FTM0->C2SC=0x28;
+			FTM0->CONTROLS[3].CnSC//               --------------------------------------->FTM0->C3SC=0x28;
 			FTM0->COMBINE|=0x0200;
 			FTM0->COMBINE|=0x1000;
-			//FTM0->C3V=250;
-			//FTM0->C2V=250;
+			FTM0->CONTROLS[3].CnV=250;// ------------------------------------------------->FTM0->C3V=250;
+			FTM0->CONTROLS[2].CnV=250;//--------------------------------------------------->FTM0->C2V=250;
 			FTM0->SC=0x68;
 		}
 		else if( COMPLEMENTARY_PWM == config)
@@ -110,10 +110,11 @@ void Fleximer_mode(flexTimer_channels_t channel, flexTimer_modes_t mode, flexTim
 				SIM->SCGC6|=0x03000000; //enable FTM0 and FTM0 module clock
 				SIM->SCGC5=SIM->SCGC5|0x3E00; //enable port A/B/C/D/E clock
 				FTM0->SC=0x00;
-				//FTM0->C0SC|=0x04; //Capture on Rising Edge Only
-				//FTM0->COMBINE=0x00; //clear
-				//enable capture interrupt
-				//FTM0->C0SC|=0x40; //enable CH0 interrupt
+				/* capture on rising edge onl bit ElSA in CnSCy*/
+				FTM0->CONTROLS[0].CnSC=0x04;/*old line from app note FTM0->C0SC|=0x04;*/
+				FTM0->COMBINE=0x00; //clear
+				//enable capture interrupt bit CHIE in CnsC pag 965
+				FTM0->CONTROLS[0].CnSC=0x40;//  old line for app note----->>FTM0->SC[0]|=0x40; //enable CH0 interrupt
 				FTM0->SC|=0x08;
 				//in ISR of capture interrupt, read the FTM_c0V register to get the capture value
 			}
